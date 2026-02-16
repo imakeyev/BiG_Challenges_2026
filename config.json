@@ -1,0 +1,50 @@
+{
+    "camera": {
+        "type": "Stereo",
+        "width": 1280,
+        "height": 720,
+        "intrinsics": {
+            "fx": 800.0,
+            "fy": 800.0,
+            "cx": 640.0,
+            "cy": 360.0
+        },
+        "distortion_coeffs": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "baseline_m": 0.1
+    },
+    "lidar": {
+        "type": "VirtualLidar",
+        "extrinsics_lidar_to_camera": [
+            [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            [
+                0.0,
+                1.0,
+                0.0,
+                0.05
+            ],
+            [
+                0.0,
+                0.0,
+                1.0,
+                0.02
+            ],
+            [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        ]
+    }
+}
