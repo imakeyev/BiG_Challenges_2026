@@ -5,7 +5,7 @@ echo "--- Running Blender Script ---"
 set BLENDER_PATH="C:\Program Files\Blender Foundation\Blender 5.0\blender.exe"
 
 :: Команда для запуска. -b - в фоновом режиме, -P - выполнить Python-скрипт
-%BLENDER_PATH% -b -P trash_anim.py
+%BLENDER_PATH% -P trash_anim.py
 
 echo "--- Script finished ---"
 pause
