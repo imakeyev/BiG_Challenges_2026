@@ -87,7 +87,7 @@ if __name__ == '__main__':
             
             print("Отображение: Синий - Лидар, Цветное - Камера (полная трансформация)")
             o3d.visualization.draw_geometries(
-                [pcd_camera_transformed, pcd_lidar, coord_frame], 
+                [pcd_camera_transformed], 
                 window_name="Песочница v3.0"
             )
 

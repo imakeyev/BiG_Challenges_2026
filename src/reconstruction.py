@@ -6,7 +6,7 @@ import os
 import copy
 from stereo_camera import StereoCamera
 
-# --- Функции get_fused_pcd_for_frame и load_lidar_pcd (без изменений) ---
+# ... (get_fused_pcd_for_frame и load_lidar_pcd без изменений)
 def load_lidar_pcd(filepath):
     if not os.path.exists(filepath) or os.path.getsize(filepath) == 0: return o3d.geometry.PointCloud()
     points = np.loadtxt(filepath, dtype=np.float64); pcd = o3d.geometry.PointCloud()
@@ -37,23 +37,19 @@ def get_fused_pcd_for_frame(frame_folder, stereo_cam, calib_params):
 
 if __name__ == '__main__':
     # --- НАСТРОЙКИ ---
-    DATA_PATH = os.path.join("..", "data", "set_08")
+    DATA_PATH = os.path.join("..", "data", "set_10")
     CONFIG_FILE = os.path.join("..", "config.json")
-    START_FRAME = 1; END_FRAME = 15
+    START_FRAME = 1; END_FRAME = 200
     
     with open(CONFIG_FILE, 'r') as f: config = json.load(f)
     calib_params = { 'scale': config['manual_calibration_simulator']['scale_camera'], 'rot_x': config['manual_calibration_simulator']['rot_x_deg'], 'rot_y': config['manual_calibration_simulator']['rot_y_deg'], 'rot_z': config['manual_calibration_simulator']['rot_z_deg'] }
     stereo_cam = StereoCamera(config_path=CONFIG_FILE)
     
-    # --- Переменные для реконструкции ---
-    # Главное облако, в которое будем все собирать
     world_pcd = o3d.geometry.PointCloud()
-    
-    # --- ИЗМЕНЕНИЕ: Матрица, хранящая АБСОЛЮТНУЮ позу объекта в мире ---
     current_pose = np.identity(4)
     pcd_prev = None
 
-    print("--- НАЧАЛО 4D-РЕКОНСТРУКЦИИ (ИСПРАВЛЕННАЯ МАТЕМАТИКА) ---")
+    print("--- НАЧАЛО 4D-РЕКОНСТРУКЦИИ (Point-to-Plane ICP) ---")
     
     for frame_id in range(START_FRAME, END_FRAME + 1):
         frame_folder = os.path.join(DATA_PATH, f"{frame_id:04d}")
@@ -63,26 +59,24 @@ if __name__ == '__main__':
         
         if pcd_current is None or not pcd_current.has_points():
             print("  Пропуск кадра."); continue
-            
+        
+        # --- ИЗМЕНЕНИЕ: Вычисляем нормали для ICP ---
+        pcd_current.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.3, max_nn=30))
+        
         if pcd_prev is not None:
-            # Ищем трансформацию, которая двигает pcd_prev -> pcd_current
+            # --- ИЗМЕНЕНИЕ: Используем Point-to-Plane ICP ---
             icp_result = o3d.pipelines.registration.registration_icp(
-                pcd_prev, pcd_current, 0.5, np.identity(4),
-                o3d.pipelines.registration.TransformationEstimationPointToPoint()
+                pcd_prev, # Source
+                pcd_current, # Target
+                0.5, # Порог расстояния
+                np.identity(4), # Начальная трансформация
+                o3d.pipelines.registration.TransformationEstimationPointToPlane() # <-- ГЛАВНОЕ ИЗМЕНЕНИЕ
             )
             transformation_delta = icp_result.transformation
-            
-            # Обновляем абсолютную позу объекта
             current_pose = transformation_delta @ current_pose
         
-        # --- ПРАВИЛЬНАЯ ЛОГИКА РЕКОНСТРУКЦИИ ---
-        # 1. Берем текущее облако
         pcd_to_add = copy.deepcopy(pcd_current)
-        # 2. Применяем к нему ОБРАТНУЮ абсолютную позу,
-        #    чтобы "вернуть" его в систему координат самого первого кадра.
         pcd_to_add.transform(np.linalg.inv(current_pose))
-        
-        # 3. Добавляем точки к мировому облаку
         world_pcd += pcd_to_add
         print(f"  Всего в модели: {len(world_pcd.points)} точек.")
 
@@ -90,9 +84,7 @@ if __name__ == '__main__':
 
     print("\n--- РЕКОНСТРУКЦИЯ ЗАВЕРШЕНА ---")
     
-    # Финальная очистка
     world_pcd = world_pcd.voxel_down_sample(voxel_size=0.05)
     print(f"Итоговая модель содержит {len(world_pcd.points)} точек.")
     
-    # Визуализация
-    o3d.visualization.draw_geometries([world_pcd], window_name="Итоговая 3D-реконструкция")
+    o3d.visualization.draw_geometries([world_pcd], window_name="Итоговая 3D-реконструкция (Point-to-Plane)")

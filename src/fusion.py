@@ -20,8 +20,8 @@ MANUAL_ROT_Z = 180.0
 # ---------------------------------------------------------
 
 if __name__ == '__main__':
-    DATA_PATH = "..\data\set_08" # ВАЖНО: Будем генерировать в новую папку
-    FRAME_ID = 20
+    DATA_PATH = "..\data\set_10" # ВАЖНО: Будем генерировать в новую папку
+    FRAME_ID = 18
     CONFIG_FILE = "..\config.json"
     frame_folder = os.path.join(DATA_PATH, f"{FRAME_ID:04d}")
     
@@ -95,3 +95,8 @@ if __name__ == '__main__':
             [fused_pcd_downsampled], # <-- Рисуем только одно, объединенное облако
             window_name="Итоговый совмещенный меш"
         )
+
+
+
+
+
