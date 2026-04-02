@@ -4,8 +4,8 @@
 ![Libraries](https://img.shields.io/badge/Libraries-OpenCV%20%7C%20Open3D%20%7C%20NumPy-orange)
 ![Status](https://img.shields.io/badge/Status-In%20Development-brightgreen)
 
-* **Это репозиторий нашего проекта, содержащий в себе код проекта и примеры данных.**
-* **Графики, скриншоты и видео вы можете найти в каталоге data.**
+**Это репозиторий нашего проекта, содержащий в себе код проекта и примеры данных.**
+**Графики, скриншоты и видео вы можете найти в каталоге data.**
 
 ![20260321-0601-20 4771239](https://github.com/user-attachments/assets/53cbcef5-2d26-4a40-8ec2-e107125f46be)
 
